@@ -51,6 +51,15 @@ public class FlinkPulsarSink<T> extends FlinkPulsarSinkBase<T> {
         this(adminUrl, defaultTopicName, newClientConf(serviceUrl), properties, topicKeyExtractor, recordClazz);
     }
 
+    public FlinkPulsarSink(String serviceUrl,
+                           String adminUrl,
+                           Optional<String> defaultTopicName,
+                           Properties properties,
+                           Class<T> recordClazz) {
+        this(adminUrl, defaultTopicName, newClientConf(serviceUrl), properties, null, recordClazz);
+    }
+
+
     @Override
     protected Schema<T> getPulsarSchema() {
         return Schema.AVRO(recordClazz);
@@ -63,7 +72,7 @@ public class FlinkPulsarSink<T> extends FlinkPulsarSinkBase<T> {
 
         TypedMessageBuilder<T> mb;
 
-        if (forcedTopic) {
+        if (forcedTopic && topicKeyExtractor == null) {
             mb = (TypedMessageBuilder<T>) getProducer(defaultTopic).newMessage().value(value);
         } else {
             byte[] key = topicKeyExtractor.serializeKey(value);

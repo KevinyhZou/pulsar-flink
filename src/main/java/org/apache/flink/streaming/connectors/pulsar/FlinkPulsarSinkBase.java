@@ -109,7 +109,8 @@ abstract class FlinkPulsarSinkBase<T> extends RichSinkFunction<T> implements Che
         if (defaultTopicName.isPresent()) {
             this.forcedTopic = true;
             this.defaultTopic = defaultTopicName.get();
-            this.topicKeyExtractor = null;
+            this.topicKeyExtractor = topicKeyExtractor == null ?
+                    TopicKeyExtractor.getRebalancedExtractor(defaultTopic) : topicKeyExtractor;
         } else {
             this.forcedTopic = false;
             this.defaultTopic = null;

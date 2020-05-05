@@ -17,6 +17,7 @@ package org.apache.flink.streaming.connectors.pulsar;
 import org.apache.flink.types.Row;
 
 import java.io.Serializable;
+import java.util.Random;
 
 /**
  * Extract key and topic from a value.
@@ -50,4 +51,31 @@ public interface TopicKeyExtractor<T> extends Serializable {
     byte[] serializeKey(T element);
 
     String getTopic(T element);
+
+    public static <T> TopicKeyExtractor getRebalancedExtractor(String topic) {
+        return new RebalancedKeyExtractor(topic);
+    }
+
+    class RebalancedKeyExtractor implements TopicKeyExtractor<Object>{
+
+        private Random rand = new Random(47);
+        private String topic;
+
+        public RebalancedKeyExtractor(){}
+        public RebalancedKeyExtractor(String topic) {
+            this.topic = topic;
+        }
+
+        @Override
+        public byte[] serializeKey(Object element) {
+            int randValue = rand.nextInt(Integer.MAX_VALUE);
+            return String.valueOf(randValue).getBytes();
+        }
+
+        @Override
+        public String getTopic(Object element) {
+            return topic;
+        }
+    }
+
 }
